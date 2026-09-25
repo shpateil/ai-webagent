@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a0a0c">
+<meta name="robots" content="noindex,nofollow">
+<title>вход</title>
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=3">
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/theme.js"></script>
+</head>
+<body>
+<div id="wall" aria-hidden="true"></div>
+<canvas id="particles" aria-hidden="true"></canvas>
+<div class="login">
+  <form class="card" id="f">
+    <div class="mark"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4.40434 13.6099C3.51517 13.1448 3 12.5924 3 12C3 10.3431 7.02944 9 12 9C16.9706 9 21 10.3431 21 12C21 12.7144 20.2508 13.3705 19 13.8858"/><path d="M12 11.01L12.01 10.9989"/><path d="M16.8827 6C16.878 4.97702 16.6199 4.25309 16.0856 3.98084C14.6093 3.22864 11.5832 6.20912 9.32664 10.6379C7.07005 15.0667 6.43747 19.2668 7.91374 20.019C8.44117 20.2877 9.16642 20.08 9.98372 19.5"/><path d="M9.60092 4.25164C8.94056 3.86579 8.35719 3.75489 7.91369 3.98086C6.43742 4.73306 7.06999 8.93309 9.32658 13.3619C11.5832 17.7907 14.6092 20.7712 16.0855 20.019C17.3977 19.3504 17.0438 15.9577 15.3641 12.1016"/></svg></div>
+    <h1>веб-агент</h1>
+    <p>вход только для своих</p>
+    <input id="login" placeholder="логин" autocomplete="username" autocapitalize="off" spellcheck="false">
+    <input id="pass" type="password" placeholder="пароль" autocomplete="current-password">
+    <button type="submit">войти</button>
+    <div class="bad" id="bad"></div>
+  </form>
+</div>
+<script src="/static/lucide.min.js"></script>
+<script>
+lucide.createIcons();
+/* частицы на входе — тот же код что и в чате */
+function hexToRgb(h){var m=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h||'');return m?[parseInt(m[1],16),parseInt(m[2],16),parseInt(m[3],16)]:[255,46,154];}
+function particles(){
+  var cv=document.getElementById('particles'); if(!cv) return;
+  var T=(window.aiTheme?aiTheme():{dots:false});
+  if(!T.dots) return;
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var ctx=cv.getContext('2d'), dpr=Math.min(devicePixelRatio||1,2), w=0,h=0,ps=[];
+  var N=Math.max(0,parseInt(T.dotsN,10)||0); if(!N) return;
+  var col=hexToRgb(T.dotsC||T.ac), fade=T.fade!==false;
+  function size(){w=cv.width=Math.floor(innerWidth*dpr);h=cv.height=Math.floor(innerHeight*dpr);}
+  function spawn(){ps=[];for(var i=0;i<N;i++)ps.push({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*.16*dpr,vy:(Math.random()-.5)*.16*dpr,r:(Math.random()*1.5+.7)*dpr,a:Math.random()*.35+.22,tw:Math.random()*6.283,ts:.008+Math.random()*.012});}
+  size();spawn();addEventListener('resize',function(){size();spawn();},{passive:true});
+  (function tick(){ctx.clearRect(0,0,w,h);for(var i=0;i<ps.length;i++){var d=ps[i];d.x+=d.vx;d.y+=d.vy;d.tw+=d.ts;
+    if(d.x<-12)d.x=w+12;if(d.x>w+12)d.x=-12;if(d.y<-12)d.y=h+12;if(d.y>h+12)d.y=-12;
+    var k=fade?(.65+.35*Math.sin(d.tw)):1;
+    ctx.beginPath();ctx.arc(d.x,d.y,d.r,0,6.283);ctx.fillStyle='rgba('+col[0]+','+col[1]+','+col[2]+','+(d.a*k).toFixed(3)+')';ctx.fill();}
+    requestAnimationFrame(tick);})();
+}
+particles();
+document.getElementById('f').addEventListener('submit', async function (e) {
+  e.preventDefault();
+  var bad = document.getElementById('bad'), go = document.querySelector('.card button');
+  bad.textContent = ''; go.disabled = true;
+  try {
+    var r = await fetch('/api/login', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ login: document.getElementById('login').value.trim(),
+                             password: document.getElementById('pass').value }) });
+    if (r.ok) { location.href = '/'; return; }
+    var d = await r.json().catch(function () { return {}; });
+    bad.textContent = d.error || 'не пустило';
+  } catch (err) { bad.textContent = 'сервер не отвечает'; }
+  go.disabled = false;
+});
+</script>
+</body>
+</html>

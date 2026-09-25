@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#0a0a0c">
+<meta name="robots" content="noindex,nofollow">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>ai</title>
+<link rel="icon" type="image/svg+xml" href="/static/favicon.svg?v=3">
+<link rel="alternate icon" type="image/png" href="/static/icon-192.png?v=3">
+<link rel="apple-touch-icon" href="/static/icon-192.png?v=3">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="stylesheet" href="/static/style.css">
+<script src="/static/theme.js"></script>
+</head>
+<body>
+<div id="wall" aria-hidden="true"></div>
+<canvas id="particles" aria-hidden="true"></canvas>
+
+<div class="app" id="app">
+  <aside class="side" id="sidebar" aria-label="чаты">
+    <div class="sidehead">
+      <button class="iconbtn side-toggle" id="sidebar-toggle" type="button" title="свернуть панель" aria-label="свернуть панель" aria-controls="chats" aria-expanded="true"><i data-lucide="panel-left"></i></button>
+    </div>
+    <div class="newrow">
+      <button class="newbtn" id="new" title="новый чат" aria-label="новый чат"><i data-lucide="plus"></i><span>новый чат</span></button>
+      <button class="iconbtn del" id="delchat" title="удалить чат"><i data-lucide="trash-2"></i></button>
+    </div>
+    <div class="chats" id="chats"></div>
+    <div class="sidebot">
+      <!--ADMIN--><button class="iconbtn" id="admin" title="админка"><i data-lucide="shield"></i></button><!--/ADMIN-->
+      <button class="iconbtn" id="settings" title="настройки"><i data-lucide="settings-2"></i></button>
+      <button class="iconbtn" id="logout" title="выйти"><i data-lucide="log-out"></i></button>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="top">
+      <button class="iconbtn burger" id="burger" type="button" title="открыть панель" aria-label="открыть панель" aria-controls="sidebar" aria-expanded="false"><i data-lucide="panel-left"></i></button>
+      <div class="nm" id="title"></div>
+      <span class="who" id="who"></span>
+      <span class="badge" id="modebadge" title="мощность агента">макс</span>
+    </header>
+
+    <div class="imp" id="imp" hidden>
+      <span id="imp-t">вы под другим аккаунтом</span>
+      <button id="imp-back">вернуться</button>
+    </div>
+
+    <div class="feed" id="feed">
+      <div class="wrap" id="wrap"></div>
+    </div>
+
+    <div class="composer">
+      <div class="wrap">
+        <div class="box">
+          <div class="att" id="att"></div>
+          <textarea id="input" rows="1" placeholder="напиши что нужно"></textarea>
+          <div class="crow">
+            <label class="iconbtn" title="файл или фото">
+              <i data-lucide="paperclip"></i>
+              <input type="file" id="file" multiple hidden>
+            </label>
+            <div class="hint" id="hint"></div>
+            <button class="send" id="send" disabled title="отправить"><i data-lucide="arrow-up"></i></button>
+            <button class="stop" id="stop" title="остановить"><i data-lucide="square"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+  <div id="scrim" aria-hidden="true"></div>
+</div>
+
+<!--ADMIN-->
+<div class="sheet wide" id="adm" aria-hidden="true">
+  <div class="sheet-in">
+    <div class="sheet-top">
+      <span class="ttl">админка</span>
+      <div class="sp"></div>
+      <button class="iconbtn" id="close-adm" title="закрыть"><i data-lucide="x"></i></button>
+    </div>
+    <div class="sec">
+      <div class="lb">сервер</div>
+      <div class="ov" id="adm-ov"></div>
+    </div>
+    <div class="sec">
+      <div class="lb">аккаунты</div>
+      <div class="users" id="adm-users"></div>
+    </div>
+    <div class="sec">
+      <div class="lb">новый аккаунт</div>
+      <div class="row">
+        <input class="mini" id="nu-login" placeholder="логин" autocapitalize="off" spellcheck="false">
+        <input class="mini" id="nu-pass" placeholder="пароль" autocapitalize="off" spellcheck="false">
+        <input class="mini" id="nu-name" placeholder="как звать" autocapitalize="off" spellcheck="false">
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="ghost" id="nu-add"><i data-lucide="user-plus"></i> создать</button>
+      </div>
+      <div class="bad" id="nu-bad"></div>
+    </div>
+  </div>
+</div>
+<!--/ADMIN-->
+
+<div class="sheet" id="sheet" aria-hidden="true">
+  <div class="sheet-in">
+    <div class="sheet-top">
+      <span class="ttl">внешний вид</span>
+      <div class="sp"></div>
+      <button class="iconbtn" id="close-set" title="закрыть"><i data-lucide="x"></i></button>
+    </div>
+
+    <div class="sec">
+      <button class="acc" id="acc-model" aria-expanded="false">
+        <span class="lb">модель</span><b class="cur" id="acc-model-cur">как в режиме</b><i data-lucide="chevron-down"></i>
+      </button>
+      <div class="acc-body" id="acc-model-body" hidden>
+        <div class="expwrap providerwrap" id="ordinarywrap" hidden>
+          <button class="acc" id="acc-ordinary" aria-expanded="false">
+            <span class="lb">обычные</span><b class="cur" id="acc-ordinary-cur">модели</b><i data-lucide="chevron-down"></i>
+          </button>
+          <div class="acc-body" id="acc-ordinary-body" hidden>
+            <div class="models" id="models"></div>
+          </div>
+        </div>
+        <div class="expwrap providerwrap" id="cvcwrap" hidden>
+          <button class="acc" id="acc-cvc" aria-expanded="false">
+            <span class="lb">cvc</span><b class="cur" id="acc-cvc-cur">модели cvc</b><i data-lucide="chevron-down"></i>
+          </button>
+          <div class="acc-body" id="acc-cvc-body" hidden>
+            <p class="exptip">новые модели из каталога пока не проверены: баланс cvc на нуле</p>
+            <div class="models exp" id="models-cvc"></div>
+          </div>
+        </div>
+        <div class="expwrap providerwrap" id="clinewrap" hidden>
+          <button class="acc" id="acc-cline" aria-expanded="false">
+            <span class="lb">cline</span><b class="cur" id="acc-cline-cur">модели cline</b><i data-lucide="chevron-down"></i>
+          </button>
+          <div class="acc-body" id="acc-cline-body" hidden>
+            <p class="exptip">цена за миллион токенов, вход / выход. бесплатные модели ограничены</p>
+            <div class="modelgroup">платные</div>
+            <div class="models exp" id="models-cline"></div>
+            <div class="providerfree">
+              <div class="modelgroup">бесплатные</div>
+              <div class="models exp" id="models-cline-free"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="lb">акцент</div>
+      <div class="swatches" id="swatches"></div>
+      <div class="row">
+        <label class="pick"><input type="color" id="custom-ac" value="#ff2e9a"><span>свой</span></label>
+        <button class="ghost" id="reset-ac">сброс</button>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="lb">обои</div>
+      <div class="row">
+        <label class="pick wide"><input type="file" id="wall-file" accept="image/*" hidden><i data-lucide="image"></i><span id="wall-name">выбрать картинку</span></label>
+        <button class="ghost" id="wall-clear">убрать</button>
+      </div>
+      <div class="slider"><span>затемнение</span><input type="range" id="wall-dim" min="0" max="100" step="1"><b id="wall-dim-v">55</b></div>
+    </div>
+
+    <div class="sec">
+      <div class="lb">цвета фона</div>
+      <div class="row">
+        <label class="pick"><input type="color" id="bg-chat" value="#0a0a0c"><span>чат</span></label>
+        <label class="pick"><input type="color" id="bg-panel" value="#0e0e13"><span>панели</span></label>
+        <label class="pick"><input type="color" id="bg-field" value="#101015"><span>поля</span></label>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="ghost" id="bg-reset">сбросить фоны</button>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="lb">частицы</div>
+      <div class="toggle"><span>показывать</span><input type="checkbox" id="fx-dots" checked></div>
+      <div class="slider"><span>сколько</span><input type="range" id="dots-n" min="0" max="400" step="1"><b id="dots-n-v">34</b></div>
+      <div class="slider"><span>размер</span><input type="range" id="dots-size" min="30" max="400" step="5"><b id="dots-size-v">100</b></div>
+      <div class="slider"><span>прозрачность</span><input type="range" id="dots-op" min="5" max="100" step="1"><b id="dots-op-v">100</b></div>
+      <div class="slider"><span>мерцание силы</span><input type="range" id="dots-a" min="0" max="100" step="1"><b id="dots-a-v">85</b></div>
+      <div class="toggle"><span>мерцание</span><input type="checkbox" id="fx-fade" checked></div>
+      <div class="slider"><span>форма</span>
+        <select class="sel" id="dots-shape">
+          <option value="circle">точки</option>
+          <option value="square">квадратики</option>
+          <option value="dash">чёрточки</option>
+          <option value="cross">крестики</option>
+          <option value="ring">колечки</option>
+          <option value="star">звёздочки</option>
+          <option value="heart">сердечки</option>
+        </select>
+      </div>
+      <div class="row">
+        <label class="pick"><input type="color" id="dots-color" value="#ff2e9a"><span>цвет частиц</span></label>
+        <button class="ghost" id="dots-auto">как акцент</button>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="lb">текст</div>
+      <div class="slider"><span>размер</span><input type="range" id="fs" min="13" max="18" step="1"><b id="fs-v">14</b></div>
+      <div class="slider"><span>межстрочный</span><input type="range" id="lh" min="13" max="22" step="1"><b id="lh-v">1.6</b></div>
+      <div class="toggle"><span>выделение цветом</span><input type="checkbox" id="fx-sel" checked></div>
+      <div class="row">
+        <label class="pick"><input type="color" id="sel-color" value="#ff2e9a"><span id="sel-label">как акцент</span></label>
+        <button class="ghost" id="sel-auto">как акцент</button>
+      </div>
+    </div>
+
+    <div class="sec">
+      <div class="lb">плотность</div>
+      <div class="slider"><span>отступы</span><input type="range" id="dens" min="80" max="130" step="1"><b id="dens-v">100</b></div>
+    </div>
+
+    <div class="sheet-bot">
+      <button class="ghost" id="reset-all"><i data-lucide="rotate-ccw"></i> сбросить всё</button>
+      <span class="note">хранится в этом браузере</span>
+    </div>
+  </div>
+</div>
+
+<div class="drop" id="drop">отпускай</div>
+<script src="/static/lucide.min.js"></script>
+<script src="/static/app.js"></script>
+</body>
+</html>
